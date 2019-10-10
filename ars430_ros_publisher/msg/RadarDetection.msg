@@ -1,0 +1,12 @@
+float32     posX
+float32     posY
+float32     posZ
+float32     VrelRad
+float32     AzAng
+float32     ElAng
+float32     RCS
+float32     RangeVar
+float32     VrelRadVar
+float32     AzAngVar
+float32     ElAngVar
+float32     SNR

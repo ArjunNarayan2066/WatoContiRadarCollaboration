@@ -1,0 +1,19 @@
+
+<launch>
+    <arg name="id"/>
+    <arg name="bagPath" default="empty/dir"/>
+
+    <node pkg="rosbag" type="play" name="rosbag" 
+        args="-l $(arg bagPath)"/>
+
+    <node name="radar_processor_$(arg id)" pkg="ars430_ros_publisher" type="radar_processor"
+        args="-i $(arg id)"/>
+
+    <node name="radar_visualizer_$(arg id)" pkg="ars430_ros_publisher" type="radar_visualizer"
+        args="-i $(arg id) -t filtered_radar_packet_$(arg id)"/> 
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ars430_ros_publisher)/rviz/radarPointCloud.rviz" />
+</launch>
+
+
+   
