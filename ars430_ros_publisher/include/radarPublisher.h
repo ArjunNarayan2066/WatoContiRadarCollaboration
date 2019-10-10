@@ -22,11 +22,9 @@ class RadarPublisher {
 
 		// Publisher Objects
 		ros::Publisher packet_pub_;
-		ros::Publisher detection_pub_; //Not used now, kept if useful
 
 		//Publisher Functions
 		void publishRadarPacketMsg(ars430_ros_publisher::RadarPacket& radar_packet_msg);
-		void publishRadarDetectionMsg(ars430_ros_publisher::RadarDetection& radar_detection_msg);
 
 	public:
 		RadarPublisher(ros::NodeHandle new_nh_, uint8_t ID);

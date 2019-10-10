@@ -216,9 +216,5 @@ typedef struct PacketGroup {
 } PacketGroup_t;
 
 uint8_t parse_packet(udphdr_t* udphdr, unsigned char* packetptr); //Parser in parser.cpp
-void    initUnfilteredPublisher(uint8_t ID, ros::NodeHandle nh_new);
-void    publishRDIPacket(RDIPacket_t * packet);
-void    loadPacketMsg(RDIPacket_t * packet, ars430_ros_publisher::RadarPacket * msg);
-void    loadSSMessage(SSPacket_t* packet, ars430_ros_publisher::SensorStatus* msg);
 
 #endif /* PARSER_H */

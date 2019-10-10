@@ -31,11 +31,6 @@ void RadarPublisher::publishRadarPacketMsg(ars430_ros_publisher::RadarPacket& ra
   return packet_pub_.publish(radar_packet_msg);
 }
 
-void RadarPublisher::publishRadarDetectionMsg(ars430_ros_publisher::RadarDetection& radar_detection_msg) 
-{
-  return detection_pub_.publish(radar_detection_msg);
-}
-
 
 uint8_t RadarPublisher::pubCallback(PacketGroup_t* Packets) {   //call upon the appropriate publish function
   for (uint8_t i = 0; i < Packets->numFarPackets; i++) {

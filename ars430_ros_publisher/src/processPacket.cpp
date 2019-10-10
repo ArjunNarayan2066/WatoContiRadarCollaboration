@@ -23,7 +23,6 @@ uint8_t  PacketProcessor::radarID = 0; //Needed by compiler, overwritten in init
 
 //Some local functions
 void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const ars430_ros_publisher::RadarPacket::ConstPtr& oldMsg);
-void loadSSMessage(ars430_ros_publisher::SensorStatus* msg, SSPacket_t* packet);
 
 /* Initialization Processor
 * -- Not using normal constructor b/c all methods are static
@@ -52,6 +51,7 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
     //Only mutex here b/c not using the Packets struct yet
     pthread_mutex_lock(&Mutex);
 
+    // DOUBLE BUFFER GROUPING
     if(packet->EventID == FAR1 || packet->EventID == FAR0) {
         if (curFarTimeStamp == 0){ //Init Case
             curFarTimeStamp = packet->TimeStamp;
@@ -65,13 +65,13 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
         }
 
         PacketGroup_t * curGroup = &PacketsBuffer[curFarIdx]; //Tmp to make code easier to read
+        // Load message into current buffer
         loadRDIMessageFromPacket(&curGroup->farPackets[curGroup->numFarPackets], packet);
         curGroup->numFarPackets++;
 
         if (publish) {
             uint8_t err = publishPackets((curFarIdx+1)%2); //Publish the previous buffer idx
             publish = false;
-            
             pthread_mutex_unlock(&Mutex);
             return err;
         }
@@ -90,6 +90,7 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
         }
 
         PacketGroup_t* curGroup = &PacketsBuffer[curNearIdx]; //Tmp to make code easier to read
+        // Load message into current buffer
         loadRDIMessageFromPacket(&curGroup->nearPackets[curGroup->numNearPackets], packet);
         curGroup->numNearPackets++;
 
@@ -109,43 +110,12 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
     return SUCCESS;
 }
 
-/* Process Sensor Status Packet
-* -- Add packet to our internal struct
-* -- Call our publisher to publish all packets since we have a group
-* -- Publish as soon as we have the sensor status packet
-*/
-uint8_t PacketProcessor::processSSPacket(SSPacket_t* packet) {
-    // TODO: Raise an alarm on the dashboard with error info.
-    if (packet->Defective && DEFECTIVE_HW) {
-        return SS_DEFECTIVE_HW;
-    } else if (packet->BadSupplyVolt && BAD_VOLTAGE) {
-        return SS_BAD_VOLT;
-    } else if (packet->BadTemp && BAD_TEMP) {
-        return SS_BAD_TEMP;
-    } else if (packet->GmMissing && GM_MISSING) {
-        return SS_GM_MISSING;
-    } else if (packet->TxPowerStatus && POWER_REDUCED) {
-        return SS_PWR_REDUCED;
-    }
-    pthread_mutex_lock(&Mutex);
-
-    //TODO: Implement Error Checking Here...
-
-#if PROCESS_SS_PACKET
-    loadSSMessage(&Packets.sensorStatusMsg, packet);    
-#endif
-    
-    pthread_mutex_unlock(&Mutex);
-    return SUCCESS;
-}
-
 /* Publish Packets
 * -- Send our packet struct to the ROS publisher
 * -- Clear our intial struct & reset
 * -- Only called ffrom synchronized methods, dont need to mutex
 */
 uint8_t PacketProcessor::publishPackets(uint8_t idx) {
-
     if (Publisher == NULL) { //Publisher not set up
         //Check if we can still clear the packets
         if (clearPackets(idx)) { //Everything failed
@@ -231,34 +201,8 @@ void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const a
     }
 }
 
-/* Load SS ROS Message
-* -- Local Function, not in class definition
-*/
-void loadSSMessage(ars430_ros_publisher::SensorStatus* msg, SSPacket_t* packet) {
-    msg->PartNumber             = packet->PartNumber;
-    msg->AssemblyPartNumber     = packet->AssemblyPartNumber;
-    msg->SWPartNumber           = packet->SWPartNumber;
-    for (uint8_t i = 0; i < SENSOR_SERIAL_NUM_LEN; i++) {
-        msg->SerialNumber[i]    = packet->SerialNumber[i]; //Should work for a boost::array object
-    }
-    msg->BLVersion              = packet->BLVersion;
-    msg->SWVersion              = packet->SWVersion;
-    msg->UTCTimeStamp           = packet->UTCTimeStamp;
-    msg->TimeStamp              = packet->TimeStamp;
-    msg->SurfaceDamping         = packet->SurfaceDamping;
-    msg->OpState                = packet->OpState;
-    msg->CurrentFarCF           = packet->CurrentFarCF;
-    msg->CurrentNearCF          = packet->CurrentNearCF;
-    msg->Defective              = packet->Defective;
-    msg->BadSupplyVolt          = packet->BadSupplyVolt;
-    msg->BadTemp                = packet->BadTemp;
-    msg->GmMissing              = packet->GmMissing;
-    msg->TxPowerStatus          = packet->TxPowerStatus;
-    msg->MaximumRangeFar        = packet->MaxRangeFar;
-    msg->MaximumRangeNear       = packet->MaxRangeNear;
-}
-
 /* Set ROS Publisher Callback
+    UNUSED CURRENTLY
 */
 void PacketProcessor::setPublisherCallback(RadarPublisher* newPublisher) {
     pthread_mutex_lock(&Mutex);
@@ -267,6 +211,7 @@ void PacketProcessor::setPublisherCallback(RadarPublisher* newPublisher) {
 }
 
 /* Set the current radarID
+    UNUSED CURRENTLY
 */
 void PacketProcessor::setRadarID(uint8_t newRadarID) {
     pthread_mutex_lock(&Mutex);
@@ -274,7 +219,8 @@ void PacketProcessor::setRadarID(uint8_t newRadarID) {
     pthread_mutex_unlock(&Mutex);
 }
 
-/* Print the currently selected buffer
+/* Print to console the currently selected buffer
+    For debugging
 */
 void PacketProcessor::printPacketGroup(uint8_t idx) {
     pthread_mutex_lock(&Mutex);
