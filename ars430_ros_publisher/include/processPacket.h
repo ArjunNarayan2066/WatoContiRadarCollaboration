@@ -62,9 +62,6 @@ class PacketProcessor {
         static uint8_t initializePacketProcessor(uint8_t newRadarID, RadarPublisher* newPublisher);
         static uint8_t processRDIMsg(const ars430_ros_publisher::RadarPacket::ConstPtr& packet);
 
-        static void    setPublisherCallback(RadarPublisher* newPublisher);
-        static void    setRadarID(uint8_t newRadarID);
-
         /* Print the index buffer chosen */
         static void    printPacketGroup(uint8_t idx);
 };

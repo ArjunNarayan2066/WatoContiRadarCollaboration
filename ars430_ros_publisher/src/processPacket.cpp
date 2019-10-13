@@ -6,11 +6,6 @@
 #include <pthread.h>
 #include <stdio.h>
 
-//Processing Rules: Written out in better detail in the spec doc
-//Spec Doc: https://docs.google.com/document/d/13W7H_Z5pgCx8rVgnv7u1MaKYaGQvnPspWVuuTmzJgUA/edit
-
-//#define PROCESS_SS_PACKET //Perception doesn't need it
-
 //STATIC INITS
 pthread_mutex_t      PacketProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER; //Non recursive
 PacketGroup_t        PacketProcessor::PacketsBuffer[2]; //Init Double Buffer
@@ -199,24 +194,6 @@ void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const a
 
         newMsg->Detections.push_back(data);
     }
-}
-
-/* Set ROS Publisher Callback
-    UNUSED CURRENTLY
-*/
-void PacketProcessor::setPublisherCallback(RadarPublisher* newPublisher) {
-    pthread_mutex_lock(&Mutex);
-    Publisher = newPublisher;
-    pthread_mutex_unlock(&Mutex);
-}
-
-/* Set the current radarID
-    UNUSED CURRENTLY
-*/
-void PacketProcessor::setRadarID(uint8_t newRadarID) {
-    pthread_mutex_lock(&Mutex);
-    radarID = newRadarID;
-    pthread_mutex_unlock(&Mutex);
 }
 
 /* Print to console the currently selected buffer
