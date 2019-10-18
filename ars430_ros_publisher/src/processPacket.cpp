@@ -17,7 +17,7 @@ uint8_t  PacketProcessor::curNearIdx = 0,       PacketProcessor::curFarIdx = 0;
 uint8_t  PacketProcessor::radarID = 0; //Needed by compiler, overwritten in init
 
 //Some local functions
-void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const ars430_ros_publisher::RadarPacket::ConstPtr& oldMsg);
+bool loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const ars430_ros_publisher::RadarPacket::ConstPtr& oldMsg);
 
 /* Initialization Processor
 * -- Not using normal constructor b/c all methods are static
@@ -61,8 +61,9 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
 
         PacketGroup_t * curGroup = &PacketsBuffer[curFarIdx]; //Tmp to make code easier to read
         // Load message into current buffer
-        loadRDIMessageFromPacket(&curGroup->farPackets[curGroup->numFarPackets], packet);
-        curGroup->numFarPackets++;
+        if (loadRDIMessageFromPacket(&curGroup->farPackets[curGroup->numFarPackets], packet)) {
+            curGroup->numFarPackets++;
+        }
 
         if (publish) {
             uint8_t err = publishPackets((curFarIdx+1)%2); //Publish the previous buffer idx
@@ -86,8 +87,9 @@ uint8_t PacketProcessor::processRDIMsg(const ars430_ros_publisher::RadarPacket::
 
         PacketGroup_t* curGroup = &PacketsBuffer[curNearIdx]; //Tmp to make code easier to read
         // Load message into current buffer
-        loadRDIMessageFromPacket(&curGroup->nearPackets[curGroup->numNearPackets], packet);
-        curGroup->numNearPackets++;
+        if (loadRDIMessageFromPacket(&curGroup->nearPackets[curGroup->numNearPackets], packet)) {
+            curGroup->numNearPackets++;
+        }
 
         if (publish) {
             uint8_t err = publishPackets((curNearIdx+1)%2); //Publish the previous buffer idx
@@ -152,12 +154,13 @@ uint8_t PacketProcessor::clearAllPackets() {
     return SUCCESS;
 }
 
-void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const ars430_ros_publisher::RadarPacket::ConstPtr& oldMsg) {
+bool loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const ars430_ros_publisher::RadarPacket::ConstPtr& oldMsg) { 
     newMsg->EventID                    = oldMsg->EventID;
     newMsg->TimeStamp                  = oldMsg->TimeStamp;
     newMsg->MeasurementCounter         = oldMsg->MeasurementCounter;
     newMsg->Vambig                     = oldMsg->Vambig;
     newMsg->CenterFrequency            = oldMsg->CenterFrequency;
+    newMsg->Detections.clear();
 
     for(uint8_t i = 0; i < oldMsg->Detections.size(); i++) {
 
@@ -194,6 +197,9 @@ void loadRDIMessageFromPacket(ars430_ros_publisher::RadarPacket* newMsg, const a
 
         newMsg->Detections.push_back(data);
     }
+
+    // Return true if there is at least one detection in newMsg after filtering
+    return (newMsg->Detections.size() > 0);
 }
 
 /* Print to console the currently selected buffer
