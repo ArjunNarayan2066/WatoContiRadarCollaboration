@@ -5,17 +5,17 @@ data for perception in the form of ROS messages. This is currently accomplished 
 ```
 Nodes & Topics:
 1. radar_publisher -> This will take in the raw radar data & convert to ROS messages. This does no processing, filtering or grouping. It is simply meant to convert the data types to something ROS can understand & manipulate
-    
+
     Publishes To: `unfiltered_radar_packet_ID`
 
 2. radar_processor -> This will take in the radar ROS messages & covert the raw data into clean data for perception.
 This first step is to group the data by timestamp to get a proper sense of the order of the data. Then we run some basic thresholding to eliminate the obviously unnecessary packets. The next step is to perform whatever processing/filtering is required to clean the data. Then output
-    
+
     Subscribes To: `unfiltered_radar_packet_ID`
     Publishes To: `filtered_radar_packet_ID`
 
 3. radar_visualizer -> This will take the clean ROS Radar messages and convert to the SensorMsgs/PointCloud2 ROS Message type. This is so that the rviz visualizer we have can properly visualize the data.
-    
+
     Subscribes To: `filtered_radar_packet_ID`
     Publishes To: `radar_pointcloud_ID`
 ```
@@ -28,7 +28,7 @@ First, create a new directory to contain your catkin workspace. Place a copy of 
 
 Next, run `catkin_make` in your workspace root to initialize your workspace. Once it has initialized with no errors, source the setup.bash file into your environment
 ```
-~/%HOME%/catkin_ws source devel/setup.bash
+cd ~/catkin_ws; source devel/setup.bash
 ```
 
 ### Launch Radar with Rosbag
@@ -42,9 +42,9 @@ ex. roslaunch ars430_ros_publisher radarROSbag.launch id:=1 bagPath:= /home/wato
 ```
 The id arg sets the name of the topic, in our case the bags were recorded with ID = 1 so this will always need to be set to 1. The bagPath allows the playing of the rosbag
 
-### Launch Rosbag Independantly 
+### Launch Rosbag Independantly
 
-In the case where the visualizer is not needed the rosbag node and `radar_processor` nodes can be run manually. 
+In the case where the visualizer is not needed the rosbag node and `radar_processor` nodes can be run manually.
 
 To play the rosbag:
 ```bash
