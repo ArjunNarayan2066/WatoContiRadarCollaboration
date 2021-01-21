@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   genmsg
-  pcl_conversions 
+  pcl_conversions
   pcl_ros
   tf
   visualization_msgs
@@ -43,7 +43,7 @@ catkin_package(
 ## Vars to build with
 set(extra_LIBRARIES -lpcap -lpthread) #Packet Cap, Capabilities, Mutexes
 set(CMAKE_CXX_FLAGS "-std=c++11 -w -g -O3 ${CMAKE_CXX_FLAGS}") #Ignore all warnings, debug flags, optimize
-# set(RADAR_UNFLITE$R_SOURCE src/UnfilteredMain.cpp    src/parser.cpp          src/sniffer.cpp)
+set(RADAR_UNFILTER_SOURCE src/UnfilteredMain.cpp    src/parser.cpp          src/sniffer.cpp)
 set(RADAR_FILTER_SOURCE   src/radarPublisher.cpp    src/processPacket.cpp   src/FilteredMain.cpp)
 set(VIS_SOURCE            src/PointCloudConverter.cpp)
 
@@ -55,21 +55,21 @@ set(VIS_SOURCE            src/PointCloudConverter.cpp)
 ## Your package locations should be listed before other locations
 include_directories( include  ${catkin_INCLUDE_DIRS} )
 
-# ## Unfiltered Publisher
-# add_executable(radar_publisher ${RADAR_UNFLITER_SOURCE}  )
+## Unfiltered Publisher
+add_executable(radar_publisher ${RADAR_UNFILTER_SOURCE}  )
 
-# target_link_libraries(radar_publisher 
-#                       ${catkin_LIBRARIES} 
-#                       ${extra_LIBRARIES}
-#                       )
+target_link_libraries(radar_publisher
+                      ${catkin_LIBRARIES}
+                      ${extra_LIBRARIES}
+                      )
 
-# add_dependencies(radar_publisher ars430_ros_publisher_generate_messages_cpp)
+add_dependencies(radar_publisher ars430_ros_publisher_generate_messages_cpp)
 
 ## Filtered Publisher
 add_executable(radar_processor ${RADAR_FILTER_SOURCE}  )
 
-target_link_libraries(radar_processor 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(radar_processor
+                      ${catkin_LIBRARIES}
                       ${extra_LIBRARIES}
                       )
 

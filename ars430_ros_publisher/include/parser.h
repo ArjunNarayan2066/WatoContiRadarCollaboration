@@ -2,9 +2,9 @@
 #define PARSER_H
 
 /* File: parser.h
- * 
+ *
  * Parses raw char string packet data into predefined structs
- * Defines metadata & operational parameters for whole pipeline 
+ * Defines metadata & operational parameters for whole pipeline
  */
 
 /* General Use Includes */
@@ -24,13 +24,13 @@
 #include <netinet/ip_icmp.h>
 
 /* ROS Messages */
-#include "ars430_ros_publisher/RadarDetection.h" 
+#include "ars430_ros_publisher/RadarDetection.h"
 #include "ars430_ros_publisher/RadarPacket.h"
 #include "ars430_ros_publisher/SensorStatus.h"
 
 //Packet Cap Definitons: If we are using live capture or from pcap doc
 #define OFFLINE         0
-#define LIVE            1 
+#define LIVE            1
 
 //Logging Definitions
 #define LOGGING         0
@@ -208,7 +208,7 @@ typedef struct SSPacket {
 } SSPacket_t;
 
 //Static # of near or far packets, dynamic # of detections per packet
-typedef struct PacketGroup {    
+typedef struct PacketGroup {
     ars430_ros_publisher::RadarPacket   nearPackets[NUM_NEAR];
     ars430_ros_publisher::RadarPacket   farPackets[NUM_FAR];
     uint8_t numFarPackets;
@@ -216,5 +216,6 @@ typedef struct PacketGroup {
 } PacketGroup_t;
 
 uint8_t parse_packet(udphdr_t* udphdr, unsigned char* packetptr); //Parser in parser.cpp
+void initUnfilteredPublisher(uint8_t ID, ros::NodeHandle nh);
 
 #endif /* PARSER_H */
